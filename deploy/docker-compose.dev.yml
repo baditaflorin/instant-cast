@@ -1,0 +1,22 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      args:
+        VERSION: dev
+        COMMIT: local
+    env_file:
+      - .env.example
+    environment:
+      APP_ENV: development
+      APP_PUBLIC_BASE_URL: http://localhost:8080
+      APP_ALLOWED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      APP_UPLOAD_DIR: /data/uploads
+    ports:
+      - "8080:8080"
+    volumes:
+      - instant-cast-dev-uploads:/data/uploads
+
+volumes:
+  instant-cast-dev-uploads:

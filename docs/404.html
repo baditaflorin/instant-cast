@@ -1,19 +1,21 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="No-account screen recorder with webcam overlay, on-device transcription, and encrypted expiring share links."
+    />
+    <meta name="theme-color" content="#eef3f2" />
+    <link rel="manifest" href="/instant-cast/manifest.webmanifest" />
+    <link rel="icon" href="/instant-cast/icon.svg" />
     <title>Instant Cast</title>
-    <script>
-      const base = "/instant-cast/";
-      const path = window.location.pathname;
-      if (path.startsWith(base)) {
-        sessionStorage.setItem("instant-cast:redirect", path + window.location.search + window.location.hash);
-        window.location.replace(base);
-      }
-    </script>
+    <script type="module" crossorigin src="/instant-cast/assets/index-DEPfDJDP.js"></script>
+    <link rel="modulepreload" crossorigin href="/instant-cast/assets/vendor-Ddypxaxf.js">
+    <link rel="stylesheet" crossorigin href="/instant-cast/assets/index-Bl-nvRXC.css">
   </head>
   <body>
-    <p>Redirecting to Instant Cast...</p>
+    <div id="root"></div>
   </body>
 </html>

@@ -1,0 +1,19 @@
+#!/usr/bin/env sh
+set -eu
+
+echo "pre-commit: formatting and linting"
+npm run lint
+npm run fmt:check
+CGO_ENABLED=0 go vet ./cmd/... ./internal/...
+
+if command -v golangci-lint >/dev/null 2>&1; then
+  golangci-lint run
+else
+  echo "golangci-lint not installed; skipping"
+fi
+
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks protect --staged --redact --config .gitleaks.toml
+else
+  echo "gitleaks not installed; skipping"
+fi

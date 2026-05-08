@@ -1,0 +1,25 @@
+{
+  "title": "Instant Cast",
+  "schemaVersion": 39,
+  "version": 1,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "HTTP requests",
+      "targets": [
+        {
+          "expr": "sum(rate(instant_cast_http_requests_total[5m])) by (status)"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Encrypted uploaded bytes",
+      "targets": [
+        {
+          "expr": "rate(instant_cast_uploaded_encrypted_bytes_total[5m])"
+        }
+      ]
+    }
+  ]
+}

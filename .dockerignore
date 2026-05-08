@@ -1,0 +1,12 @@
+.git
+.githooks
+node_modules
+dist
+docs/assets
+coverage
+runtime-data
+tmp
+.env
+.env.*
+!.env.example
+*.log

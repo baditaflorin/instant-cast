@@ -1,0 +1,218 @@
+openapi: 3.1.0
+info:
+  title: Instant Cast API
+  version: 0.1.0
+  description: Runtime API for encrypted blob upload, signed share metadata, and health checks.
+servers:
+  - url: http://localhost:8080
+paths:
+  /healthz:
+    get:
+      operationId: getHealthz
+      responses:
+        "200":
+          description: Service is alive.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /readyz:
+    get:
+      operationId: getReadyz
+      responses:
+        "200":
+          description: Service is ready.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /metrics:
+    get:
+      operationId: getMetrics
+      responses:
+        "200":
+          description: Prometheus metrics.
+          content:
+            text/plain:
+              schema:
+                type: string
+  /api/uploads:
+    post:
+      operationId: createUpload
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+                - metadata
+              properties:
+                file:
+                  type: string
+                  format: binary
+                metadata:
+                  type: string
+                  description: JSON-encoded UploadMetadata.
+      responses:
+        "201":
+          description: Encrypted upload accepted.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadResponse"
+        "400":
+          $ref: "#/components/responses/Error"
+        "413":
+          $ref: "#/components/responses/Error"
+  /api/shares/{token}:
+    get:
+      operationId: getShare
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Share metadata and blob download URL.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShareResponse"
+        "404":
+          $ref: "#/components/responses/Error"
+        "410":
+          $ref: "#/components/responses/Error"
+  /api/blobs/{id}:
+    get:
+      operationId: getBlob
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Encrypted blob bytes.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "403":
+          $ref: "#/components/responses/Error"
+        "404":
+          $ref: "#/components/responses/Error"
+        "410":
+          $ref: "#/components/responses/Error"
+components:
+  responses:
+    Error:
+      description: JSON error response.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - version
+        - commit
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        version:
+          type: string
+        commit:
+          type: string
+    UploadMetadata:
+      type: object
+      required:
+        - filename
+        - clearContentType
+        - encryptedBytes
+        - clearBytes
+        - ttlSeconds
+      properties:
+        filename:
+          type: string
+          minLength: 1
+          maxLength: 160
+        clearContentType:
+          type: string
+          minLength: 1
+          maxLength: 120
+        encryptedBytes:
+          type: integer
+          minimum: 1
+        clearBytes:
+          type: integer
+          minimum: 1
+        transcript:
+          type: string
+          maxLength: 50000
+        durationSeconds:
+          type: number
+          minimum: 0
+        ttlSeconds:
+          type: integer
+          minimum: 300
+          maximum: 2592000
+    UploadResponse:
+      type: object
+      required:
+        - id
+        - token
+        - expiresAt
+        - blobDownloadUrl
+      properties:
+        id:
+          type: string
+        token:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        blobDownloadUrl:
+          type: string
+          format: uri
+    ShareResponse:
+      type: object
+      required:
+        - id
+        - expiresAt
+        - blobDownloadUrl
+        - metadata
+      properties:
+        id:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
+        blobDownloadUrl:
+          type: string
+          format: uri
+        metadata:
+          $ref: "#/components/schemas/UploadMetadata"
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+        message:
+          type: string

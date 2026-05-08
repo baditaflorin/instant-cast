@@ -1,0 +1,10 @@
+title = "instant-cast gitleaks config"
+
+[allowlist]
+description = "Generated browser bundles are audited through source dependencies and npm audit."
+paths = [
+  '''^docs/assets/.*\.js$''',
+  '''^docs/assets/.*\.js\.map$''',
+  '''^dist/.*$''',
+  '''^node_modules/.*$''',
+]

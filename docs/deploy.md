@@ -1,10 +1,10 @@
-# Deploy
+# GitHub Pages Deploy
 
 Live GitHub Pages URL: https://baditaflorin.github.io/instant-cast/
 
 Repository URL: https://github.com/baditaflorin/instant-cast
 
-Instant Cast publishes the frontend from the `main` branch `docs/` directory.
+Instant Cast publishes the frontend from the `main` branch `docs/` directory. The backend deploy guide is `deploy/README.md`.
 
 ## Publish
 
@@ -14,6 +14,8 @@ git add docs
 git commit -m "chore: publish pages"
 git push origin main
 ```
+
+`make build` writes Vite output to `dist/` first, then copies the app shell into `docs/` while preserving `docs/adr/`, `docs/architecture.md`, and other project documentation.
 
 ## Roll Back
 

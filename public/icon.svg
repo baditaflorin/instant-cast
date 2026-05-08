@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Instant Cast icon">
+  <rect width="96" height="96" rx="18" fill="#eef3f2"/>
+  <rect x="15" y="23" width="66" height="45" rx="8" fill="#0a6b6f"/>
+  <rect x="24" y="32" width="28" height="18" rx="3" fill="#eef3f2"/>
+  <circle cx="65" cy="53" r="10" fill="#d95f43"/>
+  <path d="M37 73h22" stroke="#202124" stroke-width="6" stroke-linecap="round"/>
+</svg>

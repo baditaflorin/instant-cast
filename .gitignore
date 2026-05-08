@@ -21,6 +21,7 @@ Thumbs.db
 *.log
 tmp/
 coverage/
+test-results/
 
 # Node
 node_modules/

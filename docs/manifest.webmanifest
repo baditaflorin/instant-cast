@@ -1,0 +1,17 @@
+{
+  "name": "Instant Cast",
+  "short_name": "Instant Cast",
+  "description": "No-account screen recorder with webcam overlay, transcription, and encrypted sharing.",
+  "start_url": "/instant-cast/",
+  "scope": "/instant-cast/",
+  "display": "standalone",
+  "background_color": "#eef3f2",
+  "theme_color": "#0a6b6f",
+  "icons": [
+    {
+      "src": "/instant-cast/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

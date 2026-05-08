@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+set -eu
+
+if [ -f package.json ]; then
+  npm run generate:api
+fi
