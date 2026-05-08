@@ -1,0 +1,42 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE/editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Logs and temp
+*.log
+tmp/
+coverage/
+
+# Node
+node_modules/
+dist/
+.vite/
+.turbo/
+
+# Go
+bin/
+*.test
+*.out
+vendor/
+
+# Generated backend data
+uploads/
+runtime-data/
+
+# Docker/local deploy secrets
+deploy/.env

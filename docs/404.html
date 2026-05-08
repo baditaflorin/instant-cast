@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Instant Cast</title>
+    <script>
+      const base = "/instant-cast/";
+      const path = window.location.pathname;
+      if (path.startsWith(base)) {
+        sessionStorage.setItem("instant-cast:redirect", path + window.location.search + window.location.hash);
+        window.location.replace(base);
+      }
+    </script>
+  </head>
+  <body>
+    <p>Redirecting to Instant Cast...</p>
+  </body>
+</html>
