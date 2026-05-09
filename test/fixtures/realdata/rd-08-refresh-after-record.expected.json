@@ -1,0 +1,5 @@
+{
+  "canRecord": true,
+  "restoreAction": "offer-restore",
+  "warningIncludes": "draft"
+}

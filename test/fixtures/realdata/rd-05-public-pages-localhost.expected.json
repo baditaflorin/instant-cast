@@ -1,0 +1,5 @@
+{
+  "canRecord": true,
+  "sharePreflight": "blocked",
+  "warningIncludes": "localhost"
+}

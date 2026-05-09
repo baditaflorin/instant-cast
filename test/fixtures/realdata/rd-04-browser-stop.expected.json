@@ -1,0 +1,5 @@
+{
+  "canRecord": true,
+  "captureMode": "screen-camera-mic",
+  "eventOutcome": "auto-finalize"
+}

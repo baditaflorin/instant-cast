@@ -1,0 +1,5 @@
+{
+  "canRecord": true,
+  "transcriptConfidence": "low",
+  "warningIncludes": "Review transcript"
+}

@@ -1,0 +1,6 @@
+{
+  "canRecord": true,
+  "captureMode": "screen-mic",
+  "confidence": "medium",
+  "warningIncludes": "Camera was skipped"
+}

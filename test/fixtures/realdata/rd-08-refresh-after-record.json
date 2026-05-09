@@ -1,0 +1,12 @@
+{
+  "id": "rd-08-refresh-after-record",
+  "screen": "available",
+  "camera": "available",
+  "microphone": "available",
+  "durationSeconds": 65,
+  "width": 1920,
+  "height": 1080,
+  "speech": "clear",
+  "hasDraft": true,
+  "apiBaseUrl": "https://api.example.com"
+}

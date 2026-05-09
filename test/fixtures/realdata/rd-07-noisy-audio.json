@@ -1,0 +1,11 @@
+{
+  "id": "rd-07-noisy-audio",
+  "screen": "available",
+  "camera": "available",
+  "microphone": "available",
+  "durationSeconds": 180,
+  "width": 1920,
+  "height": 1080,
+  "speech": "noisy",
+  "apiBaseUrl": "https://api.example.com"
+}

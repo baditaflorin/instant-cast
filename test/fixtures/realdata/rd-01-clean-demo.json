@@ -1,0 +1,11 @@
+{
+  "id": "rd-01-clean-demo",
+  "screen": "available",
+  "camera": "available",
+  "microphone": "available",
+  "durationSeconds": 120,
+  "width": 1920,
+  "height": 1080,
+  "speech": "clear",
+  "apiBaseUrl": "https://api.example.com"
+}

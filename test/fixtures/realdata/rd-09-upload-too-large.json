@@ -1,0 +1,12 @@
+{
+  "id": "rd-09-upload-too-large",
+  "screen": "available",
+  "camera": "available",
+  "microphone": "available",
+  "durationSeconds": 1800,
+  "width": 3840,
+  "height": 2160,
+  "speech": "clear",
+  "apiBaseUrl": "https://api.example.com",
+  "maxUploadBytes": 524288000
+}

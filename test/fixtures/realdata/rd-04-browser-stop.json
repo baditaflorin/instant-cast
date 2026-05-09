@@ -1,0 +1,11 @@
+{
+  "id": "rd-04-browser-stop",
+  "screen": "ended",
+  "camera": "available",
+  "microphone": "available",
+  "durationSeconds": 32,
+  "width": 1440,
+  "height": 900,
+  "speech": "clear",
+  "apiBaseUrl": "https://api.example.com"
+}

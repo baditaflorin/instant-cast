@@ -1,0 +1,11 @@
+{
+  "id": "rd-06-large-4k",
+  "screen": "available",
+  "camera": "available",
+  "microphone": "available",
+  "durationSeconds": 900,
+  "width": 3840,
+  "height": 2160,
+  "speech": "clear",
+  "apiBaseUrl": "https://api.example.com"
+}

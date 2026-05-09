@@ -1,0 +1,6 @@
+{
+  "canRecord": true,
+  "captureMode": "screen-camera-mic",
+  "confidence": "high",
+  "sharePreflight": "ok"
+}

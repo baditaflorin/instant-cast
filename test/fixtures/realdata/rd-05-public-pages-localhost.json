@@ -1,0 +1,12 @@
+{
+  "id": "rd-05-public-pages-localhost",
+  "screen": "available",
+  "camera": "available",
+  "microphone": "available",
+  "durationSeconds": 120,
+  "width": 1920,
+  "height": 1080,
+  "speech": "clear",
+  "apiBaseUrl": "http://localhost:8080",
+  "pageOrigin": "https://baditaflorin.github.io"
+}

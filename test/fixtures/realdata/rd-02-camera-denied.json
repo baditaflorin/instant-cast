@@ -1,0 +1,11 @@
+{
+  "id": "rd-02-camera-denied",
+  "screen": "available",
+  "camera": "denied",
+  "microphone": "available",
+  "durationSeconds": 90,
+  "width": 1920,
+  "height": 1080,
+  "speech": "clear",
+  "apiBaseUrl": "https://api.example.com"
+}

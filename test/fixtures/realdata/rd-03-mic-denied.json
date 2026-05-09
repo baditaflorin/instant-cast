@@ -1,0 +1,11 @@
+{
+  "id": "rd-03-mic-denied",
+  "screen": "available",
+  "camera": "available",
+  "microphone": "denied",
+  "durationSeconds": 75,
+  "width": 1920,
+  "height": 1080,
+  "speech": "silent",
+  "apiBaseUrl": "https://api.example.com"
+}

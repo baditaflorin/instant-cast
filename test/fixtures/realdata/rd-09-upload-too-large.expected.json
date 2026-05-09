@@ -1,0 +1,5 @@
+{
+  "canRecord": true,
+  "sizeRisk": "critical",
+  "warningIncludes": "download locally"
+}
