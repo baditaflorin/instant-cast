@@ -18,3 +18,12 @@
 ## Notes
 
 State export is the canonical work artifact. Copying the state JSON matters for small recordings and debugging; very large states remain file-download first.
+
+## After Implementation
+
+Green or explicitly out of scope: 12/12.
+
+- State JSON can be downloaded or copied.
+- Transcript and share URL copy paths remain available.
+- Browser print is exposed for the current restored/recorded work.
+- API/curl examples stay in `docs/api.md`; embed/code/screenshot exports remain out of scope in ADR 0062.

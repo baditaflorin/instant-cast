@@ -22,3 +22,12 @@
 ## Notes
 
 The red rows block a stranger who already has a state file or share link and expects the app to accept it without hunting for the exact button.
+
+## After Implementation
+
+Green or explicitly out of scope: 16/16.
+
+- Drag/drop imports state files and text share URLs.
+- Paste-box and clipboard-read paths route state JSON or Instant Cast share URLs.
+- Multi-file state import saves every valid state and reports partial failures.
+- Folder import, arbitrary external URL import, image paste, and sample/demo catalogs remain explicitly out of scope in ADR 0061.

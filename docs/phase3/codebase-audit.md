@@ -13,3 +13,10 @@
 | Documentation drift | README lacks limitations and verified checklist                              | Update                                    |
 
 Generated build assets were excluded from this audit. Remaining duplication is either UI-specific wiring or documented in ADR 0064.
+
+## After Implementation
+
+- Dead exports from the audit were removed.
+- Input classification is centralized in `features/state/inputRouter.ts`.
+- `golangci-lint` is scoped to project Go packages with `CGO_ENABLED=0` so `node_modules` Go snippets and local cgo failures do not make hooks noisy.
+- TypeScript source remains at 0 `any` and 0 `@ts-ignore`.

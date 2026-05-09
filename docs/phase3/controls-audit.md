@@ -25,3 +25,7 @@
 | Print           | Red    | No production handler                          | Implement |
 
 No production controls are pure stubs after Phase 2, but import/output coverage is not yet complete enough for a stranger.
+
+## After Implementation
+
+All visible controls have production handlers. Import supports file picker, multi-file, drag/drop, paste box, and clipboard read. Output supports recording download, transcript copy, share URL copy, state download, state copy, restore, clear, and print.
