@@ -8,7 +8,7 @@ import { StatusPill } from "../../components/StatusPill";
 import { decryptBlobWithAge } from "../encryption/ageCrypto";
 import { downloadBlob } from "../../lib/download";
 import { formatBytes } from "../../lib/time";
-import { toErrorMessage } from "../../lib/errors";
+import { classifyError, formatActionableError } from "../../lib/actionableErrors";
 
 interface SharedPlaybackProps {
   token: string;
@@ -21,6 +21,7 @@ export function SharedPlayback({ token, passphrase, apiBaseUrl }: SharedPlayback
   const [clearBlob, setClearBlob] = useState<Blob | null>(null);
   const [clearUrl, setClearUrl] = useState<string | null>(null);
   const [decryptError, setDecryptError] = useState<string | null>(null);
+  const [progressLabel, setProgressLabel] = useState("Loading");
 
   const shareQuery = useQuery({
     queryKey: ["share", token, resolvedApiBaseUrl],
@@ -40,7 +41,13 @@ export function SharedPlayback({ token, passphrase, apiBaseUrl }: SharedPlayback
 
     fetchEncryptedBlob(shareQuery.data.blobDownloadUrl)
       .then((encrypted) =>
-        decryptBlobWithAge(encrypted, passphrase, shareQuery.data.metadata.clearContentType),
+        decryptBlobWithAge(
+          encrypted,
+          passphrase,
+          shareQuery.data.metadata.clearContentType,
+          undefined,
+          (label) => setProgressLabel(label),
+        ),
       )
       .then((blob) => {
         if (cancelled) return;
@@ -48,7 +55,7 @@ export function SharedPlayback({ token, passphrase, apiBaseUrl }: SharedPlayback
         setClearUrl(URL.createObjectURL(blob));
       })
       .catch((error: unknown) => {
-        if (!cancelled) setDecryptError(toErrorMessage(error));
+        if (!cancelled) setDecryptError(formatActionableError(classifyError(error)));
       });
 
     return () => {
@@ -114,7 +121,7 @@ export function SharedPlayback({ token, passphrase, apiBaseUrl }: SharedPlayback
                   <video src={clearUrl} className="h-full w-full" controls playsInline />
                 ) : (
                   <div className="grid h-full place-items-center text-sm font-bold text-white/70">
-                    {shareQuery.isLoading ? "Loading" : "Decrypting"}
+                    {shareQuery.isLoading ? "Loading" : progressLabel}
                   </div>
                 )}
               </div>
@@ -141,14 +148,15 @@ export function SharedPlayback({ token, passphrase, apiBaseUrl }: SharedPlayback
 
               {decryptError || shareQuery.error ? (
                 <p className="mt-5 rounded-md bg-coral/10 p-3 text-sm font-semibold text-coral">
-                  {decryptError || toErrorMessage(shareQuery.error)}
+                  {decryptError || formatActionableError(classifyError(shareQuery.error))}
                 </p>
               ) : null}
 
               {metadata?.transcript ? (
                 <div className="mt-5">
                   <h2 className="text-sm font-black uppercase tracking-normal text-ink/60">
-                    Transcript
+                    Transcript{" "}
+                    {metadata.transcriptConfidence ? `(${metadata.transcriptConfidence})` : ""}
                   </h2>
                   <p className="mt-2 whitespace-pre-wrap rounded-md bg-paper p-3 text-sm leading-6">
                     {metadata.transcript}

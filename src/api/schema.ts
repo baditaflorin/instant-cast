@@ -116,6 +116,13 @@ export interface components {
       encryptedBytes: number;
       clearBytes: number;
       transcript?: string;
+      /** @enum {string} */
+      transcriptConfidence?: "high" | "medium" | "low";
+      warnings?: string[];
+      /** @enum {string} */
+      captureMode?: "screen-camera-mic" | "screen-camera" | "screen-mic" | "screen-only";
+      appVersion?: string;
+      schemaVersion?: number;
       durationSeconds?: number;
       ttlSeconds: number;
     };

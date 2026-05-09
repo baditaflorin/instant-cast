@@ -4,6 +4,8 @@ import type { RecorderOptions, RecordingResult } from "./types";
 
 interface ActiveRecording {
   stop: () => Promise<RecordingResult>;
+  result: Promise<RecordingResult>;
+  warnings: string[];
 }
 
 function createVideoElement(stream: MediaStream): HTMLVideoElement {
@@ -32,6 +34,19 @@ function waitForVideo(video: HTMLVideoElement): Promise<void> {
 
 function stopStream(stream: MediaStream | null): void {
   stream?.getTracks().forEach((track) => track.stop());
+}
+
+async function requestOptionalStream(
+  constraints: MediaStreamConstraints,
+  skippedMessage: string,
+  warnings: string[],
+): Promise<MediaStream | null> {
+  try {
+    return await navigator.mediaDevices.getUserMedia(constraints);
+  } catch {
+    warnings.push(skippedMessage);
+    return null;
+  }
 }
 
 function randomId(): string {
@@ -77,9 +92,11 @@ export async function startCanvasRecording(
   if (!context) throw new UserFacingError("Canvas recording is not available.");
 
   let screenStream: MediaStream | null = null;
-  let userStream: MediaStream | null = null;
+  let cameraStream: MediaStream | null = null;
+  let microphoneStream: MediaStream | null = null;
   let audioContext: AudioContext | null = null;
   let animationFrame = 0;
+  const warnings: string[] = [];
 
   try {
     screenStream = await navigator.mediaDevices.getDisplayMedia({
@@ -87,17 +104,26 @@ export async function startCanvasRecording(
       audio: true,
     });
 
-    if (options.includeCamera || options.includeMicrophone) {
-      userStream = await navigator.mediaDevices.getUserMedia({
-        video: options.includeCamera ? { width: 1280, height: 720 } : false,
-        audio: options.includeMicrophone,
-      });
+    if (options.includeCamera) {
+      cameraStream = await requestOptionalStream(
+        { video: { width: 1280, height: 720 }, audio: false },
+        "Camera was skipped; screen recording can continue.",
+        warnings,
+      );
+    }
+
+    if (options.includeMicrophone) {
+      microphoneStream = await requestOptionalStream(
+        { video: false, audio: true },
+        "Microphone was skipped; recording can continue without voice.",
+        warnings,
+      );
     }
 
     const screenVideo = createVideoElement(screenStream);
     const cameraVideo =
-      userStream && options.includeCamera && userStream.getVideoTracks().length > 0
-        ? createVideoElement(userStream)
+      cameraStream && cameraStream.getVideoTracks().length > 0
+        ? createVideoElement(cameraStream)
         : null;
 
     await waitForVideo(screenVideo);
@@ -116,7 +142,10 @@ export async function startCanvasRecording(
 
     const canvasStream = canvas.captureStream(options.frameRate);
     const tracks: MediaStreamTrack[] = [...canvasStream.getVideoTracks()];
-    const audioTracks = [...screenStream.getAudioTracks(), ...(userStream?.getAudioTracks() ?? [])];
+    const audioTracks = [
+      ...screenStream.getAudioTracks(),
+      ...(microphoneStream?.getAudioTracks() ?? []),
+    ];
 
     if (audioTracks.length > 0) {
       audioContext = new AudioContext();
@@ -133,6 +162,14 @@ export async function startCanvasRecording(
     const mimeType = chooseSupportedMimeType();
     const recorder = new MediaRecorder(mixedStream, mimeType ? { mimeType } : undefined);
     const startedAt = performance.now();
+    const captureMode =
+      cameraVideo && audioTracks.length > 0
+        ? "screen-camera-mic"
+        : cameraVideo
+          ? "screen-camera"
+          : audioTracks.length > 0
+            ? "screen-mic"
+            : "screen-only";
 
     recorder.ondataavailable = (event) => {
       if (event.data.size > 0) chunks.push(event.data);
@@ -150,6 +187,8 @@ export async function startCanvasRecording(
           contentType,
           durationSeconds: (performance.now() - startedAt) / 1000,
           createdAt: new Date().toISOString(),
+          captureMode,
+          warnings,
         });
       };
     });
@@ -167,15 +206,19 @@ export async function startCanvasRecording(
         cancelAnimationFrame(animationFrame);
         mixedStream.getTracks().forEach((track) => track.stop());
         stopStream(screenStream);
-        stopStream(userStream);
+        stopStream(cameraStream);
+        stopStream(microphoneStream);
         await audioContext?.close();
         return result;
       },
+      result: stopped,
+      warnings,
     };
   } catch (error) {
     cancelAnimationFrame(animationFrame);
     stopStream(screenStream);
-    stopStream(userStream);
+    stopStream(cameraStream);
+    stopStream(microphoneStream);
     await audioContext?.close();
     throw error;
   }

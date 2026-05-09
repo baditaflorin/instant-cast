@@ -13,13 +13,18 @@ import (
 )
 
 type Metadata struct {
-	Filename         string  `json:"filename" validate:"required,min=1,max=160"`
-	ClearContentType string  `json:"clearContentType" validate:"required,min=1,max=120"`
-	EncryptedBytes   int64   `json:"encryptedBytes" validate:"required,min=1"`
-	ClearBytes       int64   `json:"clearBytes" validate:"required,min=1"`
-	Transcript       string  `json:"transcript,omitempty" validate:"max=50000"`
-	DurationSeconds  float64 `json:"durationSeconds,omitempty" validate:"min=0"`
-	TTLSeconds       int64   `json:"ttlSeconds" validate:"required,min=300,max=2592000"`
+	Filename             string   `json:"filename" validate:"required,min=1,max=160"`
+	ClearContentType     string   `json:"clearContentType" validate:"required,min=1,max=120"`
+	EncryptedBytes       int64    `json:"encryptedBytes" validate:"required,min=1"`
+	ClearBytes           int64    `json:"clearBytes" validate:"required,min=1"`
+	Transcript           string   `json:"transcript,omitempty" validate:"max=50000"`
+	TranscriptConfidence string   `json:"transcriptConfidence,omitempty" validate:"omitempty,oneof=high medium low"`
+	Warnings             []string `json:"warnings,omitempty" validate:"max=50,dive,max=240"`
+	CaptureMode          string   `json:"captureMode,omitempty" validate:"omitempty,oneof=screen-camera-mic screen-camera screen-mic screen-only"`
+	AppVersion           string   `json:"appVersion,omitempty" validate:"max=40"`
+	SchemaVersion        int      `json:"schemaVersion,omitempty" validate:"omitempty,min=1"`
+	DurationSeconds      float64  `json:"durationSeconds,omitempty" validate:"min=0"`
+	TTLSeconds           int64    `json:"ttlSeconds" validate:"required,min=300,max=2592000"`
 }
 
 type Record struct {

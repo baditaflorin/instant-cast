@@ -5,16 +5,35 @@ import type { RecorderOptions, RecorderState, RecordingResult } from "./types";
 
 export function useRecorder(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
   const activeRecording = useRef<{ stop: () => Promise<RecordingResult> } | null>(null);
+  const stopHandled = useRef(false);
   const [state, setState] = useState<RecorderState>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [warnings, setWarnings] = useState<string[]>([]);
 
   const start = useCallback(
-    async (options: RecorderOptions) => {
+    async (options: RecorderOptions, onAutoStop?: (result: RecordingResult) => void) => {
       if (!canvasRef.current) return;
       setError(null);
+      setWarnings([]);
       setState("requesting");
       try {
-        activeRecording.current = await startCanvasRecording(canvasRef.current, options);
+        const recording = await startCanvasRecording(canvasRef.current, options);
+        activeRecording.current = recording;
+        setWarnings(recording.warnings);
+        stopHandled.current = false;
+        recording.result
+          .then((result) => {
+            if (stopHandled.current) return;
+            stopHandled.current = true;
+            activeRecording.current = null;
+            setState("idle");
+            onAutoStop?.(result);
+          })
+          .catch((err: unknown) => {
+            if (stopHandled.current) return;
+            setError(toErrorMessage(err));
+            setState("idle");
+          });
         setState("recording");
       } catch (err) {
         setError(toErrorMessage(err));
@@ -28,6 +47,7 @@ export function useRecorder(canvasRef: React.RefObject<HTMLCanvasElement | null>
     if (!activeRecording.current) return null;
     setState("stopping");
     try {
+      stopHandled.current = true;
       const result = await activeRecording.current.stop();
       activeRecording.current = null;
       setState("idle");
@@ -39,5 +59,5 @@ export function useRecorder(canvasRef: React.RefObject<HTMLCanvasElement | null>
     }
   }, []);
 
-  return { state, error, start, stop, clearError: () => setError(null) };
+  return { state, error, warnings, start, stop, clearError: () => setError(null) };
 }

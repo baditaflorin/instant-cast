@@ -34,17 +34,25 @@ export async function uploadEncryptedRecording(
   encryptedBlob: Blob,
   metadata: UploadMetadata,
   apiBaseUrl?: string | null,
+  signal?: AbortSignal,
 ): Promise<UploadResponse> {
   const form = new FormData();
   form.append("file", encryptedBlob, `${metadata.filename}.age`);
   form.append("metadata", JSON.stringify(metadata));
 
-  const { data, error } = await api(apiBaseUrl).POST("/api/uploads", {
-    body: form as never,
+  const response = await fetch(`${getApiBaseUrl(apiBaseUrl)}/api/uploads`, {
+    method: "POST",
+    body: form,
+    signal,
   });
 
-  if (!data) throwApiError(error, "Upload failed.");
-  return data;
+  const payload = (await response.json().catch(() => null)) as UploadResponse | ApiError | null;
+  if (!response.ok) {
+    throwApiError(payload && "error" in payload ? payload : undefined, "Upload failed.");
+  }
+
+  if (!payload || !("token" in payload)) throw new Error("Upload response was incomplete.");
+  return payload;
 }
 
 export async function fetchShare(
@@ -63,4 +71,12 @@ export async function fetchEncryptedBlob(url: string): Promise<Blob> {
   const response = await fetch(url);
   if (!response.ok) throw new Error(`Download failed with HTTP ${response.status}.`);
   return response.blob();
+}
+
+export async function checkHealth(
+  apiBaseUrl?: string | null,
+  signal?: AbortSignal,
+): Promise<boolean> {
+  const response = await fetch(`${getApiBaseUrl(apiBaseUrl)}/healthz`, { signal });
+  return response.ok;
 }

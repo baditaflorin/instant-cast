@@ -14,4 +14,6 @@ export interface RecordingResult {
   contentType: string;
   durationSeconds: number;
   createdAt: string;
+  captureMode: "screen-camera-mic" | "screen-camera" | "screen-mic" | "screen-only";
+  warnings: string[];
 }

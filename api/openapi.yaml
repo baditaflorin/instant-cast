@@ -163,6 +163,23 @@ components:
         transcript:
           type: string
           maxLength: 50000
+        transcriptConfidence:
+          type: string
+          enum: [high, medium, low]
+        warnings:
+          type: array
+          items:
+            type: string
+          maxItems: 50
+        captureMode:
+          type: string
+          enum: [screen-camera-mic, screen-camera, screen-mic, screen-only]
+        appVersion:
+          type: string
+          maxLength: 40
+        schemaVersion:
+          type: integer
+          minimum: 1
         durationSeconds:
           type: number
           minimum: 0
