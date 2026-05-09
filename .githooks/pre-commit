@@ -7,7 +7,7 @@ npm run fmt:check
 CGO_ENABLED=0 go vet ./cmd/... ./internal/...
 
 if command -v golangci-lint >/dev/null 2>&1; then
-  golangci-lint run
+  CGO_ENABLED=0 golangci-lint run ./cmd/... ./internal/...
 else
   echo "golangci-lint not installed; skipping"
 fi

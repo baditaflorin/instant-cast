@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 import {
   Captions,
   Check,
+  Clipboard,
   Copy,
   Download,
   Github,
@@ -9,6 +10,7 @@ import {
   Link,
   Mic,
   MonitorUp,
+  Printer,
   RotateCcw,
   ScanFace,
   Share2,
@@ -44,6 +46,7 @@ import { remuxRecording } from "../media-processing/ffmpeg";
 import { detectFaceFrame } from "../media-processing/mediapipe";
 import { buildSharePageUrl, copyToClipboard } from "../share/shareLinks";
 import { preflightShareEndpoint } from "../share/sharePreflight";
+import { readStateFiles, routeTextInput } from "../state/inputRouter";
 import { exportStudioState, importStudioState, serializeStudioState } from "../state/studioState";
 import { transcribeRecording } from "../transcription/transcribe";
 import { useRecorder } from "./useRecorder";
@@ -100,6 +103,7 @@ export function Studio() {
     useState<RecordingRecord["transcriptConfidence"]>("medium");
   const [warnings, setWarnings] = useState<string[]>([]);
   const [shareUrl, setShareUrl] = useState("");
+  const [inputText, setInputText] = useState("");
   const [toast, setToast] = useState<string | null>(null);
   const [operation, setOperation] = useState(idleOperation);
   const [debugEnabled] = useState(
@@ -154,6 +158,17 @@ export function Studio() {
     await saveRecording(
       toRecordingRecord(nextRecording, nextTranscript, nextConfidence, nextWarnings),
     );
+  }
+
+  async function applyImportedRecord(record: RecordingRecord, message = "State file imported.") {
+    await saveRecording(record);
+    if (recording) URL.revokeObjectURL(recording.objectUrl);
+    setRecording(fromRecordingRecord(record));
+    setTranscript(record.transcript);
+    setTranscriptConfidence(record.transcriptConfidence);
+    setWarnings(record.warnings);
+    setShareUrl("");
+    setToast(message);
   }
 
   async function acceptRecording(result: RecordingResult, autoStopped = false) {
@@ -326,18 +341,63 @@ export function Studio() {
     );
   }
 
+  async function copyStateJson() {
+    if (!recording) return;
+    const state = await exportStudioState(
+      toRecordingRecord(recording, transcript, transcriptConfidence, warnings),
+    );
+    await copyToClipboard(serializeStudioState(state));
+    setToast("State JSON copied.");
+  }
+
   async function importStateFile(file: File) {
     try {
       const record = importStudioState(await file.text());
-      await saveRecording(record);
-      setRecording(fromRecordingRecord(record));
-      setTranscript(record.transcript);
-      setTranscriptConfidence(record.transcriptConfidence);
-      setWarnings(record.warnings);
-      setShareUrl("");
-      setToast("State file imported.");
+      await applyImportedRecord(record);
     } catch (error) {
       setToast(formatActionableError(classifyError(error)));
+    }
+  }
+
+  async function importStateFiles(files: FileList | File[]) {
+    const result = await readStateFiles(Array.from(files));
+    for (const record of result.accepted) await saveRecording(record);
+
+    const latest = result.accepted.at(-1);
+    if (latest) {
+      await applyImportedRecord(
+        latest,
+        result.rejected.length
+          ? `Imported ${result.accepted.length} state file; ${result.rejected.length} file could not be used.`
+          : `Imported ${result.accepted.length} state file${result.accepted.length === 1 ? "" : "s"}.`,
+      );
+      return;
+    }
+
+    setToast(result.rejected[0] ?? "No state files were imported.");
+  }
+
+  async function handleTextInput(text = inputText) {
+    const routed = routeTextInput(text);
+    if (routed.kind === "state") {
+      await applyImportedRecord(routed.record, routed.message);
+      setInputText("");
+      return;
+    }
+    if (routed.kind === "share-url") {
+      window.location.href = routed.share.href;
+      return;
+    }
+    setToast(routed.message);
+  }
+
+  async function readClipboardText() {
+    try {
+      const text = await navigator.clipboard.readText();
+      setInputText(text);
+      await handleTextInput(text);
+    } catch {
+      setToast("Clipboard access was blocked. Paste the state JSON or share URL into the box.");
     }
   }
 
@@ -371,8 +431,23 @@ export function Studio() {
     setToast("Cancelled. Your local recording is still available.");
   }
 
+  function handleDrop(event: DragEvent<HTMLElement>) {
+    event.preventDefault();
+    const files = event.dataTransfer.files;
+    if (files.length > 0) {
+      void importStateFiles(files);
+      return;
+    }
+    const text = event.dataTransfer.getData("text/plain");
+    if (text) void handleTextInput(text);
+  }
+
   return (
-    <main className="min-h-screen bg-paper text-ink">
+    <main
+      className="min-h-screen bg-paper text-ink"
+      onDragOver={(event) => event.preventDefault()}
+      onDrop={handleDrop}
+    >
       <header className="mx-auto flex w-[min(1260px,calc(100vw-32px))] flex-wrap items-center justify-between gap-3 py-5">
         <div>
           <h1 className="text-2xl font-black tracking-normal sm:text-3xl">Instant Cast</h1>
@@ -564,7 +639,7 @@ export function Studio() {
           <section className="rounded-md bg-white p-5 shadow-panel">
             <h2 className="flex items-center gap-2 text-lg font-black">
               <Link size={18} aria-hidden="true" />
-              Share
+              Settings & Share
             </h2>
             <label className="mt-3 block text-xs font-black uppercase tracking-normal text-ink/60">
               API endpoint
@@ -586,6 +661,19 @@ export function Studio() {
                     {option.label}
                   </option>
                 ))}
+              </select>
+            </label>
+            <label className="mt-3 block text-xs font-black uppercase tracking-normal text-ink/60">
+              Frame rate
+              <select
+                value={settings.frameRate}
+                onChange={(event) => updateSetting("frameRate", Number(event.target.value))}
+                className="mt-2 h-11 w-full rounded-md border-0 bg-paper px-3 text-sm normal-case ring-1 ring-black/10"
+              >
+                <option value={15}>15 fps</option>
+                <option value={24}>24 fps</option>
+                <option value={30}>30 fps</option>
+                <option value={60}>60 fps</option>
               </select>
             </label>
             <label className="mt-3 flex items-center gap-2 text-sm font-bold text-ink/70">
@@ -627,12 +715,31 @@ export function Studio() {
               ref={importInputRef}
               type="file"
               accept="application/json,.json"
+              multiple
               className="hidden"
               onChange={(event) => {
-                const file = event.target.files?.[0];
-                if (file) void importStateFile(file);
+                const files = event.target.files;
+                if (files?.length === 1) {
+                  void importStateFile(files[0]);
+                } else if (files && files.length > 1) {
+                  void importStateFiles(files);
+                }
                 event.currentTarget.value = "";
               }}
+            />
+            <textarea
+              value={inputText}
+              onChange={(event) => setInputText(event.target.value)}
+              onPaste={(event) => {
+                const pasted = event.clipboardData.getData("text/plain");
+                if (pasted) {
+                  setInputText(pasted);
+                  void handleTextInput(pasted);
+                }
+              }}
+              placeholder="Paste state JSON or an Instant Cast share URL"
+              aria-label="State JSON or share URL"
+              className="mt-3 min-h-20 w-full resize-y rounded-md border-0 bg-paper p-3 text-sm leading-5 ring-1 ring-black/10"
             />
             <div className="mt-3 flex flex-wrap gap-2">
               <IconButton
@@ -642,9 +749,31 @@ export function Studio() {
                 onClick={exportStateFile}
               />
               <IconButton
+                label="Copy state"
+                icon={<Copy size={18} aria-hidden="true" />}
+                disabled={!recording}
+                onClick={copyStateJson}
+              />
+              <IconButton
                 label="Import state"
                 icon={<Upload size={18} aria-hidden="true" />}
                 onClick={() => importInputRef.current?.click()}
+              />
+              <IconButton
+                label="Read clipboard"
+                icon={<Clipboard size={18} aria-hidden="true" />}
+                onClick={readClipboardText}
+              />
+              <IconButton
+                label="Open pasted"
+                icon={<Link size={18} aria-hidden="true" />}
+                onClick={() => handleTextInput()}
+              />
+              <IconButton
+                label="Print"
+                icon={<Printer size={18} aria-hidden="true" />}
+                disabled={!recording}
+                onClick={() => window.print()}
               />
               <IconButton
                 label="Restore"

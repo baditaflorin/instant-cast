@@ -39,7 +39,7 @@ lint: ## Run linters
 	@npm run lint
 	@npm run fmt:check
 	@CGO_ENABLED=0 go vet $(GO_PACKAGES)
-	@if command -v golangci-lint >/dev/null 2>&1; then golangci-lint run; else echo "golangci-lint not installed; skipping"; fi
+	@if command -v golangci-lint >/dev/null 2>&1; then CGO_ENABLED=0 golangci-lint run ./cmd/... ./internal/...; else echo "golangci-lint not installed; skipping"; fi
 	@npm run audit:prod
 	@if command -v govulncheck >/dev/null 2>&1; then CGO_ENABLED=0 govulncheck $(GO_PACKAGES); else echo "govulncheck not installed; skipping"; fi
 

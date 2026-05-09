@@ -41,14 +41,6 @@ export function updateOperation(
   };
 }
 
-export function finishOperation(operation: OperationState): OperationState {
-  return { ...operation, status: "succeeded", progress: 1, cancellable: false };
-}
-
 export function cancelOperation(operation: OperationState): OperationState {
   return { ...operation, status: "cancelled", cancellable: false };
-}
-
-export function failOperation(operation: OperationState, label = "Failed"): OperationState {
-  return { ...operation, status: "failed", label, cancellable: false };
 }

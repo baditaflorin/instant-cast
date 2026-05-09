@@ -46,10 +46,6 @@ export async function getLatestRecording(): Promise<RecordingRecord | null> {
   return latest ? normalizeRecording(latest) : null;
 }
 
-export async function deleteRecording(id: string): Promise<void> {
-  await db.recordings.delete(id);
-}
-
 export async function clearRecordings(): Promise<void> {
   await db.recordings.clear();
 }
