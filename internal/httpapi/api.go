@@ -54,6 +54,8 @@ type errorResponse struct {
 	Message string `json:"message"`
 }
 
+const multipartMemoryLimit int64 = 32 << 20
+
 func New(
 	cfg config.Config,
 	store *storage.Store,
@@ -110,7 +112,8 @@ func (a *API) health(w http.ResponseWriter, _ *http.Request) {
 
 func (a *API) createUpload(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, a.cfg.MaxUploadBytes)
-	if err := r.ParseMultipartForm(a.cfg.MaxUploadBytes); err != nil {
+	// #nosec G120 -- request body is bounded by MaxBytesReader; this limit only controls in-memory multipart buffering.
+	if err := r.ParseMultipartForm(multipartMemoryLimit); err != nil {
 		writeError(w, http.StatusBadRequest, "bad_request", "Upload must be multipart/form-data.")
 		return
 	}
