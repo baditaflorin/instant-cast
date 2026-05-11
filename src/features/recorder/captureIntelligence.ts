@@ -123,9 +123,32 @@ export function planCapture(input: unknown): CapturePlan {
   }
 
   let shareRecovery: CapturePlan["shareRecovery"] = "none";
+  // The schema declares three shareProblem values — all of them used to be
+  // routed by sharePreflight or the watch page, but only "missing-key" was
+  // actually handled here. "expired" and "mismatch" silently dropped to
+  // shareRecovery: "none", which is the same answer Instant Cast gives a
+  // perfectly healthy link, leaving the user with no remediation path.
   if (scenario.shareProblem === "missing-key") {
     shareRecovery = "ask-for-original-link";
     warnings.push("The share link is missing the decryption key.");
+  } else if (scenario.shareProblem === "expired") {
+    // The token is gone server-side. Re-uploading is the only path; we
+    // route to retry-backend so the UI nudges the user to re-encrypt and
+    // re-upload, then warn so the watch page knows to display "expired"
+    // rather than the generic "missing key" copy.
+    shareRecovery = "retry-backend";
+    warnings.push(
+      "The share link has expired; re-upload the encrypted recording to mint a new token.",
+    );
+  } else if (scenario.shareProblem === "mismatch") {
+    // The passphrase fragment doesn't decrypt the bytes the backend has —
+    // either the link was edited or the encryption regenerated. Asking
+    // for the original link is the safest action; downloading what's on
+    // the backend would just produce undecryptable bytes.
+    shareRecovery = "ask-for-original-link";
+    warnings.push(
+      "The decryption key in the URL doesn't match the uploaded recording; ask for the original link.",
+    );
   } else if (sizeRisk === "critical") {
     shareRecovery = "download-locally";
   }

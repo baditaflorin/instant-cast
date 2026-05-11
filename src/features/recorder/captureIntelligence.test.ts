@@ -53,3 +53,41 @@ describe("real-data capture plans", () => {
     });
   }
 });
+
+describe("planCapture shareProblem handling", () => {
+  const baseScenario = {
+    id: "share-problem-base",
+    screen: "available" as const,
+    camera: "available" as const,
+    microphone: "available" as const,
+    durationSeconds: 30,
+    width: 1280,
+    height: 720,
+    speech: "clear" as const,
+  };
+
+  it('routes "missing-key" to ask-for-original-link with a key-specific warning', () => {
+    const plan = planCapture({ ...baseScenario, shareProblem: "missing-key" });
+    expect(plan.shareRecovery).toBe("ask-for-original-link");
+    expect(plan.warnings.join(" ")).toMatch(/missing the decryption key/i);
+  });
+
+  it('routes "expired" to retry-backend with an expiry-specific warning', () => {
+    const plan = planCapture({ ...baseScenario, shareProblem: "expired" });
+    expect(plan.shareRecovery).toBe("retry-backend");
+    expect(plan.warnings.join(" ")).toMatch(/expired/i);
+    // Must not show the missing-key copy — the cause is different.
+    expect(plan.warnings.join(" ")).not.toMatch(/missing the decryption key/i);
+  });
+
+  it('routes "mismatch" to ask-for-original-link with a mismatch-specific warning', () => {
+    const plan = planCapture({ ...baseScenario, shareProblem: "mismatch" });
+    expect(plan.shareRecovery).toBe("ask-for-original-link");
+    expect(plan.warnings.join(" ")).toMatch(/doesn't match/i);
+  });
+
+  it('falls through to "none" when no shareProblem is reported and size is safe', () => {
+    const plan = planCapture({ ...baseScenario });
+    expect(plan.shareRecovery).toBe("none");
+  });
+});
